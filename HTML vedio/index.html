@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML Video Player</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+   <div class="player">
+     <video class="player__video viewer" src="NightSky.mp4" width="100%" height="900px"></video>
+
+     <div class="player__controls">
+       <div class="progress">
+        <div class="progress__filled"></div>
+       </div>
+       <button class="player__button toggle" title="Toggle Play">►</button>
+       <input type="range" name="volume" class="player__slider" min="0" max="1" step="0.05" value="1">
+       <input type="range" name="playbackRate" class="player__slider" min="0.5" max="2" step="0.1" value="1">
+       <button data-skip="-10" class="player__button">« 10s</button>
+       <button data-skip="25" class="player__button">25s »</button>
+     </div>
+   </div>
+
+  <script>
+
+      const player = document.querySelector('.player'); //player main div, inside it we'll take every element.
+      const vedio = player.querySelector('.viewer');
+      const progress = player.querySelector('.progress');
+      const progressBar = player.querySelector('.progress__filled');
+      const toggle = player.querySelector('.toggle');
+      const skipButtons = player.querySelectorAll('[data-skip]');
+      const ranges = player.querySelectorAll('.player__slider');
+
+      //
+      function togglePlay()
+      {
+          const method = vedio.paused ? 'play' : 'pause' ;
+          vedio[method](); //take the ans of method and put[] in vedio and call() it.
+      }
+      function updateButton()
+      {
+          const icon = vedio.paused ? '►':'❚ ❚'; //(this.paused) can also be used bec vedio is bound by eventListener.
+          toggle.textContent = icon;
+      }
+      function handleRangeUpdate()
+      {
+          vedio[this.name]=this.value; //playBack and Volume are updated by value.
+      }
+      function skip()
+      {
+          vedio.currentTime +=parseFloat(this.dataset.skip);//when console.log(data-set) we'll find value inside skip.
+      }
+      /*Scrub is used if we clicked anywehre on the progress bar it will update it
+      to that point clicked.*/
+      function scrub(e) //we get the event here
+      {
+          //console.log(e) we will find offsetX which tells at which ox we clicked the mouseevent.
+          const scrubTime = (e.offsetX / progress.offsetWidth) * vedio.duration; //progress.offsetWidth gives the entire width of the bar. Divides the whole and multiply by vedio duration which is 60sec.
+          vedio.currentTime = scrubTime; //update it.
+      }
+      function handleProgress()
+      {
+          const per = (vedio.currentTime / vedio.duration)*100;
+          progressBar.style.flexBasis = `${per}%`; //console.log(progressBar) we'll find the flexbasis resposible for nc and dec of it. will update it.
+      }
+
+      vedio.addEventListener('click',togglePlay);//when vp click pause play.
+      vedio.addEventListener('play',updateButton);//simply could be done with toggle, but we need to update the button thatswhy other meth.
+      vedio.addEventListener('pause',updateButton);
+      vedio.addEventListener('timeupdate',handleProgress); //timeUpdate or progress prop helps in upadting the timestamp of the vedio.
+
+      toggle.addEventListener('click',togglePlay);
+      skipButtons.forEach(button => button.addEventListener('click',skip)); //foreach applied for every value achieved.
+      ranges.forEach(range => range.addEventListener('change',handleRangeUpdate));
+      ranges.forEach(range => range.addEventListener('mousemove',handleRangeUpdate));      
+
+      let mousedown = false; //just like canvas we will set flag
+      progress.addEventListener('click',scrub);
+      progress.addEventListener('mousemove',(e)=>mousedown&&scrub(e));
+      progress.addEventListener('mousedown',()=>mousedown=true);
+      progress.addEventListener('mouseup',()=>mousedown=false);
+
+  </script>
+</body>
+</html>
